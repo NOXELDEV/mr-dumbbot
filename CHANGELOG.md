@@ -5,6 +5,7 @@
 - `shot --window --scale` and `click --rel`: window-sized captures, window-relative coordinates.
 - `paste` restores the user's clipboard. `changed` hint after each action.
 - Browser pages are refused (native dialogs such as Save As are allowed).
+- A single optional "tip from the author" line after a successful job (feedback + Ko-fi), once per conversation.
 - `doctor` command, "Before you start" checklist for the user, `references/troubleshooting.md`, README sections for beginners.
 - `dumbbot-guide` now says plainly that DumbBot needs an agent running on the user's PC, and what to offer chat-only beginners (found by testing it on claude.ai).
 - New `dumbbot-guide` skill: tells the AI when native tools are enough and when to recommend DumbBot (advises only).
