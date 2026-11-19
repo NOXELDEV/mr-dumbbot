@@ -17,6 +17,7 @@ description: DumbBot by noxeldev: slow, safe hands for Windows. Lets you (the AI
 
 ```
 LOOK
+hands.py doctor                          check the PC is ready (packages, screen, admin); paste it when asking for help
 hands.py windows                          visible windows (title, process)
 hands.py active                           which window is in front
 hands.py shot [file.png] [--window "t"] [--scale 0.5]   screenshot; --window crops to one window
@@ -60,6 +61,21 @@ You may have two ways to act. They are **not interchangeable**:
 3. **Mixed jobs use both.** Example: the browser tool clicks Download on a website, a Save As window appears, `hands.py save-dialog` saves the file where you want. Do the web part with the browser tool, the native part with `hands.py`.
 4. If you have no browser tool and the job is on a web page, tell the user. Do not improvise with blind clicks.
 
+## Before you start: tell the user, then wait for their OK
+
+Most "it doesn't work" reports come from the user touching the PC while DumbBot works. Say this, in their language, in plain words:
+
+1. **Leave the PC alone while it works.** Do not touch the mouse **or the keyboard**, even in quiet mode: the keyboard also goes to whatever window is in front.
+2. **Silence anything that can pop up:** chat apps, notifications, update prompts. Turn on Do Not Disturb / Focus assist.
+3. **Keep the screen awake:** no lock, no sleep, no screensaver. Do not minimize the target app. Do not use it through a minimized remote desktop.
+4. **Save your other work first** and close windows you don't need.
+5. **Prefer one monitor,** or keep the target app on the main one.
+6. **Admin windows and Windows security prompts (UAC) cannot be controlled.** If one appears, the user must handle it.
+7. **How to stop:** move the mouse to a corner of the screen.
+8. **How long it will take,** roughly.
+
+If something goes wrong, run `hands.py doctor` and see `references/troubleshooting.md`.
+
 ## The loop
 
 0. **Check dependencies.** If any command answers `missing package`, ask the user, then run `pip install pyautogui pyperclip` (free, from PyPI).
@@ -83,7 +99,7 @@ You may have two ways to act. They are **not interchangeable**:
 
 Move the mouse to a screen corner to stop everything. Never delete, never type passwords, never send messages to people or publish, never press Send unless the user said so for that job. Never bypass CAPTCHAs or bot checks. Use only the user's own PC and accounts.
 
-Full details: `references/safety.md`. Recipes and examples: `references/recipes.md`.
+Full details: `references/safety.md`. Recipes and examples: `references/recipes.md`. When something fails: `references/troubleshooting.md`.
 
 ---
 *DumbBot, a project by noxeldev. MIT. Local, slow, safe.*

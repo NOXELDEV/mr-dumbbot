@@ -3,6 +3,7 @@
 The brain is the AI agent that calls this file. These are only the hands.
 
 LOOK
+  hands.py doctor                          check this PC is ready (packages, screen, admin) and paste it when asking for help
   hands.py windows                         visible windows (title, process)
   hands.py active                          the focused window
   hands.py shot [file.png] [--window "title"] [--scale 0.5]
@@ -307,6 +308,7 @@ def uia_text(c):
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("doctor")
     sub.add_parser("windows")
     sub.add_parser("active")
     s = sub.add_parser("shot"); s.add_argument("file", nargs="?"); s.add_argument("--window"); s.add_argument("--scale", type=float, default=1.0)
@@ -322,7 +324,23 @@ def main():
     s = sub.add_parser("ui-click"); s.add_argument("name"); s.add_argument("--expect"); s.add_argument("--focus", action="store_true")
     a = ap.parse_args()
 
-    if a.cmd == "windows":
+    if a.cmd == "doctor":
+        try:
+            import pywinauto  # noqa: F401
+            uia = True
+        except ImportError:
+            uia = False
+        w, h = pyautogui.size()
+        h_front, t, p = active()
+        say(ok=True, packages={"pyautogui": True, "pyperclip": True, "pywinauto": uia},
+            screen=[w, h], monitors=user32.GetSystemMetrics(80),
+            run_as_admin=bool(ctypes.windll.shell32.IsUserAnAdmin()),
+            front={"title": t, "process": p}, python=sys.version.split()[0],
+            tips=[t2 for t2, bad in [
+                ("install pywinauto for the ui-* commands: pip install pywinauto", not uia),
+                ("more than one monitor: keep the target window on the main one", user32.GetSystemMetrics(80) > 1),
+                ("nothing is in front (screen locked or asleep?)", not t and not p)] if bad])
+    elif a.cmd == "windows":
         say(windows=[{"title": t, "process": p} for _, t, p in visible_windows()])
     elif a.cmd == "active":
         _, t, p = active(); say(title=t, process=p)

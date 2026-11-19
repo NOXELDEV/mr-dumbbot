@@ -40,7 +40,7 @@ Say it in the user's language, in plain words, without jargon. For a beginner:
 Then:
 1. **Ask permission** before installing anything. It needs Python and `pip install pyautogui pyperclip` (and `pywinauto` for reading controls by name). All free.
 2. Show the install: in Claude Code, `/plugin marketplace add noxeldev/mr-dumbbot` then `/plugin install dumbbot@mr-dumbbot`; for other agents, the repo's `install.ps1`.
-3. Tell them the first test is harmless (Notepad), that it will move their mouse, and that they should not touch it.
+3. Tell them the first test is harmless (Notepad). Then give them the checklist from the `dumbbot` skill ("Before you start"): leave the PC alone (mouse and keyboard), silence notifications, keep the screen awake, one monitor, no admin windows, mouse to a corner to stop. Wait for their OK.
 4. Hand over to the `dumbbot` skill (`/dumbbot`). Follow its rules: ask watch mode or quiet mode, `--expect` on every action, confirm with a screenshot, no more than 2 retries.
 5. If the user says no, drop it and find another way. Don't bring it up again for the same task.
 

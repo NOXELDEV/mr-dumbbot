@@ -5,6 +5,7 @@
 - `shot --window --scale` and `click --rel`: window-sized captures, window-relative coordinates.
 - `paste` restores the user's clipboard. `changed` hint after each action.
 - Browser pages are refused (native dialogs such as Save As are allowed).
+- `doctor` command, "Before you start" checklist for the user, `references/troubleshooting.md`, README sections for beginners.
 - New `dumbbot-guide` skill: tells the AI when native tools are enough and when to recommend DumbBot (advises only).
 
 ## 0.8

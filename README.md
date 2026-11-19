@@ -41,6 +41,29 @@ DumbBot es lento a propósito para que lo puedas seguir. **No** sirve para ocult
 The `dumbbot-guide` skill lets your AI notice these situations by itself and suggest DumbBot (it only advises and asks first). The `dumbbot` skill does the work and only starts when you type `/dumbbot`.
 El skill `dumbbot-guide` deja que tu IA note estas situaciones sola y te sugiera DumbBot (solo aconseja y pregunta antes). El skill `dumbbot` hace el trabajo y solo arranca cuando escribes `/dumbbot`.
 
+## Before you run it / Antes de ejecutarlo
+
+**EN.** Most "it doesn't work" reports come from touching the PC while DumbBot works. So:
+1. **Leave the PC alone** while it works: no mouse **and no keyboard**, even in quiet mode.
+2. **Silence pop-ups:** chat apps, notifications, update prompts (turn on Do Not Disturb).
+3. **Keep the screen awake:** no lock, no sleep. Don't minimize the target app.
+4. **Save your other work** and close what you don't need. One monitor is best.
+5. Windows **admin windows and security prompts (UAC) can't be controlled**: you handle those.
+6. **To stop it:** move the mouse to a corner of the screen.
+
+**ES.** La mayoría de los "no funciona" vienen de tocar la PC mientras DumbBot trabaja. Por eso:
+1. **Deja la PC en paz** mientras trabaja: ni mouse **ni teclado**, aunque sea modo silencioso.
+2. **Silencia lo que pueda saltar:** chats, notificaciones, avisos de actualización (activa No molestar).
+3. **Mantén la pantalla despierta:** sin bloqueo ni suspensión. No minimices la app que usa.
+4. **Guarda tu otro trabajo** y cierra lo que no necesites. Mejor con un solo monitor.
+5. Las **ventanas de administrador y los avisos de seguridad (UAC) no se pueden controlar**: los atiendes tú.
+6. **Para pararlo:** mueve el mouse a una esquina de la pantalla.
+
+## If it doesn't work / Si no funciona
+
+Run `python skills/dumbbot/scripts/hands.py doctor` and read `skills/dumbbot/references/troubleshooting.md` (a table of symptoms and fixes). If you open an issue, paste the `doctor` output (remove the window title if it is private).
+Ejecuta `python skills/dumbbot/scripts/hands.py doctor` y lee `skills/dumbbot/references/troubleshooting.md` (tabla de síntomas y soluciones). Si abres un issue, pega el resultado de `doctor` (quita el título de la ventana si es privado).
+
 ## Install / Instalar
 
 Needs / Necesita: Windows 10/11, Python 3.10+, `pip install pyautogui pyperclip`.
