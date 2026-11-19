@@ -1,0 +1,13 @@
+{
+  "name": "mr-dumbbot",
+  "owner": {
+    "name": "noxeldev"
+  },
+  "plugins": [
+    {
+      "name": "dumbbot",
+      "source": "./",
+      "description": "Slow, safe mouse and keyboard hands for AI agents on Windows."
+    }
+  ]
+}

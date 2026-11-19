@@ -1,0 +1,62 @@
+---
+name: dumbbot
+description: DumbBot by noxeldev: slow, safe hands for Windows. Lets you (the AI agent) use the real mouse and keyboard on the user's own PC for desktop apps and native dialogs that have no API, such as Save As windows, clipboard hand-offs between apps and forms. Windows only. Invoke it only when the user asks for DumbBot.
+version: 0.7.0
+author: noxeldev
+platforms: [windows]
+metadata:
+  hermes:
+    tags: [automation, desktop, mouse, keyboard, local]
+---
+
+> Hermes: run commands with the terminal tool. Reports go to the user only, never to anyone else.
+
+# DumbBot, by noxeldev
+
+> If a person can do it by hand on a Windows PC, you can do it with DumbBot: slowly, like a patient person at the keyboard. Local, no cloud, no API. **Windows only** (Mac and Linux: not yet).
+
+**You are the brain. `scripts/hands.py` are the hands.** There is no other engine to install. You look at the screen, decide one step, and call the hands. The hands refuse anything unsafe.
+
+`scripts/hands.py` lives next to this file (the "Base directory for this skill" shown when it loads). Run it as `python "<that folder>/scripts/hands.py" <command>`. Needs `pip install pyautogui pyperclip`.
+
+## Commands
+
+```
+hands.py windows                       list visible windows (title, process)
+hands.py active                        which window is in front
+hands.py shot [file.png]               screenshot (look at it to decide)
+hands.py focus "title part"            bring a window to the front
+hands.py click X Y --expect "title"    slow click, only if that window is in front
+hands.py paste "text" --expect "title" paste through the clipboard
+hands.py key ctrl+l --expect "title"   press keys
+hands.py save-dialog "C:/dir/file.mp3" wait for a Windows Save As window and save there
+hands.py wait-title "title part" 60    wait until a window appears
+```
+
+Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse.
+
+## The loop
+
+1. **Ask the user how to work** before starting: *watch mode* (mouse moves in real time; they must not touch it) or *quiet mode* (no mouse: shortcuts, clipboard or an API instead, so they can keep working). If it can be done without the mouse, offer that.
+2. `shot` and look. Decide the single next step a person would take.
+3. `focus` the right window, act with `--expect "<its title>"`.
+4. `shot` again. Confirm it worked.
+5. Repeat. Then tell the user where the result is.
+
+## Key rules
+
+- **Be humble. Look before you act.** Never assume where a button is.
+- **One action, then check.** No blind chains of clicks.
+- **Slow means cheap.** Never press Generate or Download twice "just in case". First check if the result already exists. Say what a step could cost, if you know.
+- **No loops.** After 2 failures on the same step, stop and tell the user what you see and what you tried.
+- **Copy and paste for text.** Use `paste`, not key-by-key typing.
+- If something behaves oddly, say so and ask.
+
+## Safety (enforced by the code)
+
+Move the mouse to a screen corner to stop everything. Never delete, never type passwords, never send messages to people or publish, never press Send unless the user said so for that job. Never bypass CAPTCHAs or bot checks. Use only the user's own PC and accounts.
+
+Full details: `references/safety.md`. Recipes and examples: `references/recipes.md`.
+
+---
+*DumbBot, a project by noxeldev. MIT. Local, slow, safe.*

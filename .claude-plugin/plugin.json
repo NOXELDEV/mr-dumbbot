@@ -1,0 +1,17 @@
+{
+  "name": "dumbbot",
+  "description": "Slow, safe hands for Windows: the AI agent is the brain, hands.py moves the mouse and keyboard locally.",
+  "version": "0.7.0",
+  "author": {
+    "name": "noxeldev"
+  },
+  "license": "MIT",
+  "keywords": [
+    "automation",
+    "windows",
+    "mouse",
+    "keyboard",
+    "local",
+    "agent-skills"
+  ]
+}
