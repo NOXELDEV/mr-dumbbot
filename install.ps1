@@ -1,4 +1,4 @@
-# DumbBot skill installer (by noxeldev). Copies the skill to every agent found on this PC.
+# DumbBot skill installer (by noxeldev). Copies the skills to every agent found on this PC.
 # Usage: powershell -ExecutionPolicy Bypass -File install.ps1
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $targets = @{
@@ -10,8 +10,10 @@ $targets = @{
 foreach ($k in $targets.Keys) {
   $parent = Split-Path -Parent $targets[$k]
   if (-not (Test-Path $parent)) { Write-Host "skip $k (not installed)"; continue }
-  $dest = Join-Path $targets[$k] 'dumbbot'
-  New-Item -ItemType Directory -Force $dest | Out-Null
-  Copy-Item -Recurse -Force (Join-Path $root "adapters\$k\dumbbot\*") $dest
-  Write-Host "installed $k -> $dest"
+  foreach ($skill in Get-ChildItem (Join-Path $root "adapters\$k") -Directory) {
+    $dest = Join-Path $targets[$k] $skill.Name
+    New-Item -ItemType Directory -Force $dest | Out-Null
+    Copy-Item -Recurse -Force (Join-Path $skill.FullName '*') $dest
+    Write-Host "installed $k -> $dest"
+  }
 }

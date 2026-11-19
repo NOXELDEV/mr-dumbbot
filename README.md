@@ -18,6 +18,29 @@
 - **Safe in code:** corner-stop, window guard on every click/paste/key, blocklist, daily action cap, never deletes. / **Seguro en el código:** parada en la esquina, guardia de ventana en cada clic/pegado/tecla, lista de bloqueo, tope diario, nunca borra.
 - **Local and private:** nothing leaves your PC; you sign in to your own accounts. / **Local y privado:** nada sale de tu PC; tú inicias sesión en tus cuentas.
 
+## For beginners / Para principiantes
+
+**EN.** Your AI assistant can already do a lot by itself: read your files, talk to apps that have a connector, and work on web pages. Use that first. It is faster.
+But some things have no connector and no web page: a Windows "Save As" window, a desktop program, a repetitive click-here-then-there job. That is where DumbBot helps: it lets the AI use your mouse and keyboard **slowly, one visible step at a time**, so you can watch, understand and stop it (mouse to a screen corner).
+
+**ES.** Tu asistente de IA ya hace mucho solo: lee tus archivos, usa apps con conector y trabaja en páginas web. Usa eso primero, es más rápido.
+Pero hay cosas sin conector ni página web: una ventana "Guardar como" de Windows, un programa de escritorio, una tarea repetitiva de clics. Ahí ayuda DumbBot: deja que la IA use tu mouse y teclado **despacio, un paso visible a la vez**, para que puedas mirar, entender y pararlo (mouse a una esquina de la pantalla).
+
+| Situation / Situación | Use / Usa |
+|---|---|
+| Has a connector, API or command / Hay conector, API o comando | The native way / Lo nativo |
+| It is a web page / Es una página web | The browser tool / La herramienta de navegador |
+| Native Windows window (Save As, installer) / Ventana nativa de Windows | **DumbBot** |
+| Desktop app with no integration / Programa de escritorio sin integración | **DumbBot** |
+| Repetitive job you want to watch / Tarea repetitiva que quieres ver | **DumbBot** |
+| The platform or you said no to something / Tú o la plataforma dijeron que no | Neither. Never a way around a restriction / Ninguna. Nunca para esquivar una restricción |
+
+DumbBot is slow on purpose so you can follow it. It is **not** for hiding automation or avoiding bot checks.
+DumbBot es lento a propósito para que lo puedas seguir. **No** sirve para ocultar automatización ni para saltar controles anti-bot.
+
+The `dumbbot-guide` skill lets your AI notice these situations by itself and suggest DumbBot (it only advises and asks first). The `dumbbot` skill does the work and only starts when you type `/dumbbot`.
+El skill `dumbbot-guide` deja que tu IA note estas situaciones sola y te sugiera DumbBot (solo aconseja y pregunta antes). El skill `dumbbot` hace el trabajo y solo arranca cuando escribes `/dumbbot`.
+
 ## Install / Instalar
 
 Needs / Necesita: Windows 10/11, Python 3.10+, `pip install pyautogui pyperclip`.
@@ -35,7 +58,8 @@ Then use it with `/dumbbot`. It is **manual-only**: Claude will not start moving
 
 ## Files / Archivos
 
-- `skills/dumbbot/`: the skill (`SKILL.md`, `references/`, `scripts/hands.py`). / el skill.
+- `skills/dumbbot/`: the skill that does the work (`SKILL.md`, `references/`, `scripts/hands.py`). / el skill que hace el trabajo.
+- `skills/dumbbot-guide/`: the guide that tells the AI when to suggest DumbBot. / la guía que dice a la IA cuándo sugerir DumbBot.
 - `adapters/`: the same skill with the right header for Claude Code, OpenCode, Codex and Hermes. / el mismo skill con el encabezado de cada agente.
 - `tests/trigger-prompts.md`: phrases to check when it should and should not be used. / frases para comprobar cuándo usarlo y cuándo no.
 
