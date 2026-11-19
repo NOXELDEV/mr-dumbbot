@@ -15,6 +15,14 @@ metadata:
 
 This guide only helps you **decide and recommend**. It never acts. The doing is done by the separate `dumbbot` skill, which the user starts on purpose with `/dumbbot`.
 
+## What DumbBot needs (say this honestly)
+DumbBot is run by an **AI agent that can execute commands on the user's own PC**: Claude Code, Claude Desktop with its Code tab, Codex, OpenCode or Hermes. A chat that only lives in a web browser **cannot run it**, because it cannot reach the PC.
+
+So first find out what the user has:
+- **They use an agent on their PC:** recommend DumbBot as described below.
+- **They only have a web chat (a beginner):** do not oversell it. Be straight: "DumbBot is what you'd use once you have an assistant that runs on your PC, like Claude Code." Then decide what really helps *today*. For a one-off job, doing it by hand may be faster. For a repeated job, a simpler tool made for that (for example Power Automate Desktop, which comes with Windows 11, or an AutoHotkey script you write for them) can be the best first step. Mention DumbBot as the path for later, not as the answer for now.
+- **Do not claim you checked the project's status** if you could not open its page. The facts you need are in this guide.
+
 ## Pick the tool in this order
 
 1. **A direct way exists** (connector, API, MCP tool, command line, file access). Use it. It is faster and more reliable. Do **not** suggest DumbBot.

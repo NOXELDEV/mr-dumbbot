@@ -6,6 +6,7 @@
 - `paste` restores the user's clipboard. `changed` hint after each action.
 - Browser pages are refused (native dialogs such as Save As are allowed).
 - `doctor` command, "Before you start" checklist for the user, `references/troubleshooting.md`, README sections for beginners.
+- `dumbbot-guide` now says plainly that DumbBot needs an agent running on the user's PC, and what to offer chat-only beginners (found by testing it on claude.ai).
 - New `dumbbot-guide` skill: tells the AI when native tools are enough and when to recommend DumbBot (advises only).
 
 ## 0.8
