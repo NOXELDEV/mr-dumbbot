@@ -4,7 +4,7 @@ description: DumbBot by noxeldev: slow, safe hands for Windows. Lets you (the AI
 license: MIT
 metadata:
   author: noxeldev
-  version: "0.7"
+  version: "0.8"
   platform: windows
 ---
 
@@ -33,6 +33,24 @@ hands.py wait-title "title part" 60    wait until a window appears
 ```
 
 Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. **`ok` only means the keys were sent, not that the app received them.** Always `shot` to confirm. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse. **Add `--focus` to every action:** your own app often takes the foreground between two calls, so a separate `focus` call gets undone. With `--focus` the window is brought to the front and checked in the same command; the check is never skipped.
+
+## Which tool for which job (read this first)
+
+You may have two ways to act. They are **not interchangeable**:
+
+| | Browser tool (for example a Chrome extension) | `hands.py` (DumbBot) |
+|---|---|---|
+| **Works on** | Web pages inside a browser | Anything on screen: desktop apps and native Windows windows |
+| **How it acts** | Reads the page structure (DOM), clicks and types by element | Real mouse and keyboard at screen coordinates, slowly |
+| **Best for** | Websites: forms, buttons, chats, downloads | Notepad, Save As and Open dialogs, desktop AI apps, installers, anything with no web page |
+| **Cannot do** | Native Windows windows (a Save As dialog is invisible to it) | Read page structure; it only sees what a screenshot shows |
+| **Speed and reliability** | Faster and more precise on web pages | Slower and depends on coordinates, so always confirm with `shot` |
+
+**Rules**
+1. **A web page is a browser-tool job.** Use the browser tool, not `hands.py`. If your environment blocks mouse control over browsers, respect that. Never use `hands.py` to get around it.
+2. **A desktop app or a native window is a `hands.py` job.**
+3. **Mixed jobs use both.** Example: the browser tool clicks Download on a website, a Save As window appears, `hands.py save-dialog` saves the file where you want. Do the web part with the browser tool, the native part with `hands.py`.
+4. If you have no browser tool and the job is on a web page, tell the user. Do not improvise with blind clicks.
 
 ## The loop
 

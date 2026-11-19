@@ -11,7 +11,7 @@ A recipe is just the list of steps a person would do, written down so it can be 
 - Run a list of jobs (one per line) within the daily cap.
 
 ## Web pages
-For pages inside a browser, prefer the browser tools your agent already has (for example a browser extension) and use `hands.py` for native apps and for native dialogs such as Save As. Some agents restrict mouse control over browsers; respect that.
+For pages inside a browser, use the browser tools your agent already has (for example a browser extension) and use `hands.py` only for native apps and native dialogs such as Save As. Some agents restrict mouse control over browsers; respect that and never work around it. See the table in `SKILL.md`: "Which tool for which job".
 
 ## Making a recipe with the user
 1. Ask them to do the task once by hand and describe it.
