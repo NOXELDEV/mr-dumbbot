@@ -2,39 +2,56 @@
 
 The brain is the AI agent that calls this file. These are only the hands.
 
-  python hands.py windows                       list visible windows (title, process)
-  python hands.py active                        show the focused window
-  python hands.py shot [file.png]               screenshot
-  python hands.py focus "title part"            bring a window to the front
-  python hands.py click X Y --expect "title" [--focus]  slow click, only if that window is in front
-                                                (--focus brings it to the front first, same command)
-  python hands.py paste "text" --expect "title" paste text (clipboard), only if guard passes
-  python hands.py key ctrl+l --expect "title"   press keys, only if guard passes
-  python hands.py save-dialog "C:\\path\\file"  wait for a Save As window, save there
-  python hands.py wait-title "title part" [sec] wait until a window title appears
+LOOK
+  hands.py windows                         visible windows (title, process)
+  hands.py active                          the focused window
+  hands.py shot [file.png] [--window "title"] [--scale 0.5]
+                                           screenshot; --window crops to that window and prints its
+                                           rect, so you can use click X Y --rel (coordinates inside it)
+  hands.py ui-list --window "title"        buttons, fields and menus by NAME (needs pywinauto)
+  hands.py ui-read ["name"] --window "t"   read the text of a field (default: the main edit area)
+
+ACT (every action needs --expect "window title"; --focus brings it to the front first)
+  hands.py focus "title part"              bring a window to the front
+  hands.py click X Y --expect "t" [--focus] [--rel] [--double]
+  hands.py ui-click "name" --expect "t" [--focus]   press a control by name (no mouse, no coordinates)
+  hands.py paste "text" --expect "t" [--focus]      paste through the clipboard (your clipboard is restored)
+  hands.py key ctrl+l --expect "t" [--focus]
+  hands.py save-dialog "C:/dir/file.ext"   wait for a Windows Save As window and save there
+  hands.py wait-title "title part" [sec]   wait until a window title appears
+
+click, paste, key and ui-click also print "changed": true/false = did the window look different
+afterwards. It is a hint, not proof: still look at a screenshot.
 
 Safety: move the mouse to a screen corner to stop everything (PyAutoGUI fail-safe).
-Guard: input is refused unless the focused window matches --expect, and never goes to
-a process in NEVER_TYPE_IN (edit it). Daily cap on actions via DUMBBOT_MAX_ACTIONS (default 400).
+Guard: input is refused unless the focused window matches --expect. Never into the programs in
+NEVER_TYPE_IN. Browsers are refused too (use a browser tool for web pages) unless the window is a
+native dialog such as Save As, or DUMBBOT_ALLOW_BROWSER=1. Daily cap: DUMBBOT_MAX_ACTIONS (default 400).
 Never deletes. Never types passwords. Never sends messages on its own.
 """
-import argparse, ctypes, json, os, random, sys, time
+import argparse, ctypes, hashlib, json, os, random, sys, time
 from ctypes import wintypes
 from datetime import date
 from pathlib import Path
 
 try:
     import pyautogui
-    import pyperclip  # noqa: F401
+    import pyperclip
 except ImportError as e:
     print(json.dumps({"ok": False, "error": f"missing package: {e.name}",
                       "fix": "ask the user, then run: pip install pyautogui pyperclip"}))
     raise SystemExit(2)
 
+try:  # make window rectangles and mouse coordinates agree on high-DPI screens
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)
+except Exception:
+    pass
+
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
 
 NEVER_TYPE_IN = {"cmd.exe", "powershell.exe", "pwsh.exe", "regedit.exe", "taskmgr.exe", "mmc.exe"}
+BROWSERS = {"chrome.exe", "msedge.exe", "firefox.exe", "brave.exe", "opera.exe", "vivaldi.exe", "arc.exe"}
 STATE = Path(os.environ.get("DUMBBOT_STATE", Path.home() / ".dumbbot"))
 STATE.mkdir(parents=True, exist_ok=True)
 user32 = ctypes.windll.user32
@@ -50,6 +67,18 @@ def title_of(hwnd):
     buf = ctypes.create_unicode_buffer(n + 1)
     user32.GetWindowTextW(hwnd, buf, n + 1)
     return buf.value
+
+
+def class_of(hwnd):
+    buf = ctypes.create_unicode_buffer(256)
+    user32.GetClassNameW(hwnd, buf, 256)
+    return buf.value
+
+
+def rect_of(hwnd):
+    r = wintypes.RECT()
+    user32.GetWindowRect(hwnd, ctypes.byref(r))
+    return r.left, r.top, r.right - r.left, r.bottom - r.top
 
 
 def process_of(hwnd):
@@ -87,6 +116,13 @@ def visible_windows():
     return out
 
 
+def find_window(part):
+    for h, t, p in visible_windows():
+        if part.lower() in t.lower():
+            return h, t, p
+    return None
+
+
 def budget():
     f = STATE / "actions.json"
     today = str(date.today())
@@ -110,14 +146,18 @@ def guard(expect, refocus=False):
     the foreground between calls), then check again. The check itself is never skipped."""
     if refocus and expect:
         focus(expect)
-    _, t, p = active()
+    h, t, p = active()
     if p in NEVER_TYPE_IN:
         raise SystemExit(say(ok=False, error=f"blocked process {p}"))
     if not expect:
         raise SystemExit(say(ok=False, error="--expect is required: name the window that must be in front"))
     if expect.lower() not in t.lower():
         raise SystemExit(say(ok=False, error="wrong window in front", front=t, expected=expect))
+    if p in BROWSERS and class_of(h) != "#32770" and os.environ.get("DUMBBOT_ALLOW_BROWSER") != "1":
+        raise SystemExit(say(ok=False, error="browser page: use a browser tool for web pages "
+                                             "(native dialogs such as Save As are allowed)"))
     budget()
+    return h
 
 
 def pause(a=0.3, b=0.9):
@@ -157,11 +197,31 @@ def focus(part, tries=3):
     return False
 
 
+def fingerprint(h):
+    """Small hash of what a window looks like, to tell if an action changed anything."""
+    try:
+        x, y, w, hh = rect_of(h)
+        img = pyautogui.screenshot(region=(max(x, 0), max(y, 0), max(w, 1), max(hh, 1))).convert("L").resize((96, 54))
+        return hashlib.md5(img.tobytes()).hexdigest()
+    except Exception:
+        return None
+
+
 def paste(text):
-    import pyperclip
+    """Paste through the clipboard and put the user's previous text clipboard back."""
+    try:
+        old = pyperclip.paste()
+    except Exception:
+        old = None
     pyperclip.copy(text)
     pause()
     pyautogui.hotkey("ctrl", "v")
+    time.sleep(0.5)
+    if old is not None:
+        try:
+            pyperclip.copy(old)
+        except Exception:
+            pass
 
 
 def wait_title(part, sec=60):
@@ -173,18 +233,93 @@ def wait_title(part, sec=60):
     return False
 
 
+def finish(h, before):
+    time.sleep(0.7)
+    after = fingerprint(h)
+    say(ok=True, changed=(before is not None and after is not None and before != after))
+
+
+# ---------- Windows UI Automation (optional: pip install pywinauto) ----------
+
+def uia_window(part):
+    try:
+        from pywinauto import Desktop
+    except ImportError:
+        raise SystemExit(say(ok=False, error="missing package: pywinauto",
+                             fix="ask the user, then run: pip install pywinauto"))
+    found = find_window(part)
+    if not found:
+        raise SystemExit(say(ok=False, error=f"no window with title containing {part!r}"))
+    return Desktop(backend="uia").window(handle=found[0])
+
+
+def uia_controls(win, limit=150):
+    out = []
+    try:
+        for c in win.descendants():
+            try:
+                info = c.element_info
+                name = (info.name or "").strip()
+                ctype = info.control_type
+                if not name and ctype not in ("Edit", "Document"):
+                    continue
+                if not info.visible:
+                    continue
+                r = info.rectangle
+                out.append((c, {"name": name, "type": ctype, "id": info.automation_id,
+                                "enabled": bool(info.enabled),
+                                "rect": [r.left, r.top, r.right - r.left, r.bottom - r.top]}))
+                if len(out) >= limit:
+                    break
+            except Exception:
+                continue
+    except Exception as e:
+        raise SystemExit(say(ok=False, error=f"UI Automation failed: {e}"))
+    return out
+
+
+def uia_find(win, name):
+    items = uia_controls(win, 400)
+    exact = [c for c, i in items if i["name"].lower() == name.lower()]
+    part = [c for c, i in items if name.lower() in i["name"].lower()]
+    pick = exact or part
+    if not pick:
+        raise SystemExit(say(ok=False, error=f"no control named {name!r}"))
+    return pick[0]
+
+
+def uia_text(c):
+    for getter in ("get_value", "window_text"):
+        try:
+            v = getattr(c, getter)()
+            if v:
+                return v
+        except Exception:
+            pass
+    try:
+        return c.iface_value.CurrentValue
+    except Exception:
+        return ""
+
+
+# ---------- main ----------
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("windows")
     sub.add_parser("active")
-    s = sub.add_parser("shot"); s.add_argument("file", nargs="?")
+    s = sub.add_parser("shot"); s.add_argument("file", nargs="?"); s.add_argument("--window"); s.add_argument("--scale", type=float, default=1.0)
     s = sub.add_parser("focus"); s.add_argument("title")
-    s = sub.add_parser("click"); s.add_argument("x", type=int); s.add_argument("y", type=int); s.add_argument("--expect"); s.add_argument("--focus", action="store_true"); s.add_argument("--double", action="store_true")
+    s = sub.add_parser("click"); s.add_argument("x", type=int); s.add_argument("y", type=int)
+    s.add_argument("--expect"); s.add_argument("--focus", action="store_true"); s.add_argument("--double", action="store_true"); s.add_argument("--rel", action="store_true")
     s = sub.add_parser("paste"); s.add_argument("text"); s.add_argument("--expect"); s.add_argument("--focus", action="store_true")
     s = sub.add_parser("key"); s.add_argument("keys"); s.add_argument("--expect"); s.add_argument("--focus", action="store_true")
     s = sub.add_parser("save-dialog"); s.add_argument("path"); s.add_argument("--wait", type=int, default=120)
     s = sub.add_parser("wait-title"); s.add_argument("title"); s.add_argument("sec", nargs="?", type=int, default=60)
+    s = sub.add_parser("ui-list"); s.add_argument("--window", required=True)
+    s = sub.add_parser("ui-read"); s.add_argument("name", nargs="?"); s.add_argument("--window", required=True)
+    s = sub.add_parser("ui-click"); s.add_argument("name"); s.add_argument("--expect"); s.add_argument("--focus", action="store_true")
     a = ap.parse_args()
 
     if a.cmd == "windows":
@@ -193,16 +328,64 @@ def main():
         _, t, p = active(); say(title=t, process=p)
     elif a.cmd == "shot":
         f = a.file or str(STATE / f"shot_{int(time.time())}.png")
-        pyautogui.screenshot(f); say(ok=True, file=f)
+        info = {}
+        if a.window:
+            found = find_window(a.window)
+            if not found:
+                raise SystemExit(say(ok=False, error=f"no window with title containing {a.window!r}"))
+            x, y, w, h = rect_of(found[0])
+            x, y = max(x, 0), max(y, 0)
+            img = pyautogui.screenshot(region=(x, y, w, h))
+            info = {"window": found[1], "rect": [x, y, w, h]}
+        else:
+            img = pyautogui.screenshot()
+        if a.scale and a.scale != 1.0:
+            img = img.resize((max(1, int(img.width * a.scale)), max(1, int(img.height * a.scale))))
+            info["scale"] = a.scale
+            info["note"] = "multiply coordinates by 1/scale before using click"
+        img.save(f)
+        say(ok=True, file=f, size=[img.width, img.height], **info)
     elif a.cmd == "focus":
         say(ok=focus(a.title), front=active()[1])
     elif a.cmd == "click":
-        guard(a.expect, a.focus); slow_move(a.x, a.y); pause(0.2, 0.5)
-        (pyautogui.doubleClick if a.double else pyautogui.click)(); say(ok=True)
+        h = guard(a.expect, a.focus)
+        x, y = a.x, a.y
+        if a.rel:
+            wx, wy, _, _ = rect_of(h)
+            x, y = wx + x, wy + y
+        before = fingerprint(h)
+        slow_move(x, y); pause(0.2, 0.5)
+        (pyautogui.doubleClick if a.double else pyautogui.click)()
+        finish(h, before)
     elif a.cmd == "paste":
-        guard(a.expect, a.focus); paste(a.text); say(ok=True)
+        h = guard(a.expect, a.focus); before = fingerprint(h)
+        paste(a.text); finish(h, before)
     elif a.cmd == "key":
-        guard(a.expect, a.focus); pyautogui.hotkey(*a.keys.split("+")); say(ok=True)
+        h = guard(a.expect, a.focus); before = fingerprint(h)
+        pyautogui.hotkey(*a.keys.split("+")); finish(h, before)
+    elif a.cmd == "ui-list":
+        win = uia_window(a.window)
+        say(ok=True, controls=[i for _, i in uia_controls(win)])
+    elif a.cmd == "ui-read":
+        win = uia_window(a.window)
+        if a.name:
+            c = uia_find(win, a.name)
+        else:
+            cs = [c for c, i in uia_controls(win, 400) if i["type"] in ("Edit", "Document")]
+            if not cs:
+                raise SystemExit(say(ok=False, error="no text area found"))
+            c = cs[0]
+        say(ok=True, text=uia_text(c)[:2000])
+    elif a.cmd == "ui-click":
+        h = guard(a.expect, a.focus); before = fingerprint(h)
+        win = uia_window(a.expect)
+        c = uia_find(win, a.name)
+        try:
+            c.invoke()                      # no mouse involved
+        except Exception:
+            slow_move(*[int(v) for v in (c.rectangle().mid_point().x, c.rectangle().mid_point().y)])
+            pause(0.2, 0.5); pyautogui.click()
+        finish(h, before)
     elif a.cmd == "save-dialog":
         t0 = time.time()
         while time.time() - t0 < a.wait:

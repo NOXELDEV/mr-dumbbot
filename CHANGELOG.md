@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9
+- `ui-list`, `ui-read`, `ui-click`: control Windows apps by name (no coordinates, no mouse). Needs pywinauto.
+- `shot --window --scale` and `click --rel`: window-sized captures, window-relative coordinates.
+- `paste` restores the user's clipboard. `changed` hint after each action.
+- Browser pages are refused (native dialogs such as Save As are allowed).
+
+## 0.8
+- `--focus` option, "which tool for which job" table, don't-destroy rule, no Alt tap in focus.
+
 ## 0.7
 - Restructured as a Claude Code plugin and marketplace.
 - Shorter `SKILL.md`; details moved to `references/`.

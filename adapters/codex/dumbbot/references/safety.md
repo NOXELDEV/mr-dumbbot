@@ -3,7 +3,7 @@
 ## Enforced by the code (`hands.py`)
 1. **Emergency stop:** moving the mouse to any screen corner halts everything (PyAutoGUI fail-safe). Always warn the user before the mouse starts moving.
 2. **Window guard:** click, paste and key require `--expect "<window title>"` and are refused if another window is in front.
-3. **Blocklist:** never types into cmd, PowerShell, regedit, Task Manager, mmc (`NEVER_TYPE_IN`).
+3. **Blocklist:** never types into cmd, PowerShell, regedit, Task Manager, mmc (`NEVER_TYPE_IN`). Browser pages are refused too (use a browser tool); native dialogs like Save As are allowed. Set `DUMBBOT_ALLOW_BROWSER=1` only if the user explicitly wants that.
 4. **Daily action cap:** `DUMBBOT_MAX_ACTIONS` (default 400) so a loop cannot run away. The counter is kept in `DUMBBOT_STATE` (default `~/.dumbbot`).
 5. **Never deletes.** Nothing in the hands deletes files.
 

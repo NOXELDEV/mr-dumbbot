@@ -1,7 +1,7 @@
 ---
 name: dumbbot
 description: DumbBot by noxeldev: slow, safe hands for Windows. Lets you (the AI agent) use the real mouse and keyboard on the user's own PC for desktop apps and native dialogs that have no API, such as Save As windows, clipboard hand-offs between apps and forms. Windows only. Invoke it only when the user asks for DumbBot.
-version: 0.8.0
+version: 0.9.0
 author: noxeldev
 platforms: [windows]
 metadata:
@@ -17,23 +17,36 @@ metadata:
 
 **You are the brain. `scripts/hands.py` are the hands.** There is no other engine to install. You look at the screen, decide one step, and call the hands. The hands refuse anything unsafe.
 
-`scripts/hands.py` lives next to this file (the "Base directory for this skill" shown when it loads). Run it as `python "<that folder>/scripts/hands.py" <command>`. Needs `pip install pyautogui pyperclip`.
+`scripts/hands.py` lives next to this file (the "Base directory for this skill" shown when it loads). Run it as `python "<that folder>/scripts/hands.py" <command>`. Needs `pip install pyautogui pyperclip` (and `pywinauto` for the `ui-*` commands).
 
 ## Commands
 
 ```
-hands.py windows                       list visible windows (title, process)
-hands.py active                        which window is in front
-hands.py shot [file.png]               screenshot (look at it to decide)
-hands.py focus "title part"            bring a window to the front
-hands.py click X Y --expect "title" --focus   slow click; --focus brings that window to the front first
-hands.py paste "text" --expect "title" paste through the clipboard
-hands.py key ctrl+l --expect "title"   press keys
-hands.py save-dialog "C:/dir/file.mp3" wait for a Windows Save As window and save there
-hands.py wait-title "title part" 60    wait until a window appears
+LOOK
+hands.py windows                          visible windows (title, process)
+hands.py active                           which window is in front
+hands.py shot [file.png] [--window "t"] [--scale 0.5]   screenshot; --window crops to one window
+hands.py ui-list --window "t"             buttons, fields and menus BY NAME (needs pywinauto)
+hands.py ui-read ["name"] --window "t"    read a field's text (default: the main text area)
+
+ACT  (--expect is mandatory; --focus brings that window to the front first)
+hands.py focus "title part"               bring a window to the front
+hands.py ui-click "name" --expect "t" --focus      press a control by name: no mouse, no coordinates
+hands.py click X Y --expect "t" --focus [--rel]    slow mouse click (--rel: X,Y inside the window)
+hands.py paste "text" --expect "t" --focus         paste via clipboard (the user's clipboard is restored)
+hands.py key ctrl+l --expect "t" --focus
+hands.py save-dialog "C:/dir/file.mp3"    wait for a Windows Save As window and save there
+hands.py wait-title "title part" 60       wait until a window appears
 ```
 
-Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. **`ok` only means the keys were sent, not that the app received them.** Always `shot` to confirm. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse. **Add `--focus` to every action:** your own app often takes the foreground between two calls, so a separate `focus` call gets undone. With `--focus` the window is brought to the front and checked in the same command; the check is never skipped.
+Each prints one JSON line: `{"ok": true, "changed": true}` or `{"ok": false, "error": "..."}`.
+
+- **`ok` only means the keys were sent. `changed` only hints that the window looked different.** Neither proves the app did what you wanted. Confirm with `shot` or `ui-read`.
+- `--expect` is mandatory for every action: if another window is in front, the hands refuse.
+- **Add `--focus` to every action:** your own app often takes the foreground between two calls, so a separate `focus` call gets undone. With `--focus` the window is brought to the front and checked in the same command; the check is never skipped.
+- **Prefer `ui-list` and `ui-click` to coordinates.** They find controls by name, so they survive window moves and resizes, and `ui-click` needs no mouse (works in quiet mode). Use `click X Y` only when a control has no name. `ui-read` lets you check what is really in a text field.
+- `shot --window "t"` crops to one window (cheaper and clearer) and prints its `rect`. Then use `click X Y --rel`. If you used `--scale`, multiply coordinates by 1/scale.
+- Browsers: `hands.py` refuses browser pages (use a browser tool). Native dialogs such as Save As are allowed.
 
 ## Which tool for which job (read this first)
 
