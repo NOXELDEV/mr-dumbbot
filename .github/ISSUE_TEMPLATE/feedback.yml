@@ -1,0 +1,16 @@
+name: Feedback / Sugerencia
+description: Tell us how it went, what was confusing, or what you would like
+labels: [feedback]
+body:
+  - type: textarea
+    id: how
+    attributes:
+      label: How did it go? What was confusing? What would you add?
+      description: "Beginners especially: tell us where the docs lost you. / Principiantes sobre todo: dinos dónde te perdiste."
+    validations:
+      required: true
+  - type: dropdown
+    id: level
+    attributes:
+      label: Your level
+      options: [Beginner / Principiante, Some experience / Algo de experiencia, Developer / Desarrollador]

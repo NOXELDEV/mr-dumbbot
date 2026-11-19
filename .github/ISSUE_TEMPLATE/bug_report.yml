@@ -1,0 +1,31 @@
+name: Bug report / Algo no funciona
+description: Something did not work as the docs say
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Before you post: read `skills/dumbbot/references/troubleshooting.md`. / Antes de publicar, lee la tabla de problemas."
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `hands.py doctor`
+      description: "Run `python skills/dumbbot/scripts/hands.py doctor` and paste it. Remove the window title if it is private. / Pega el resultado; quita el título de la ventana si es privado."
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Which agent runs it? (Claude Code, Codex, OpenCode, Hermes...)
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you ask it to do, and what happened?
+    validations:
+      required: true
+  - type: textarea
+    id: lang
+    attributes:
+      label: Windows language, number of monitors, antivirus

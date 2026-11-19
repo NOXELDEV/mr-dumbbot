@@ -86,6 +86,11 @@ Then use it with `/dumbbot`. It is **manual-only**: Claude will not start moving
 - `adapters/`: the same skill with the right header for Claude Code, OpenCode, Codex and Hermes. / el mismo skill con el encabezado de cada agente.
 - `tests/trigger-prompts.md`: phrases to check when it should and should not be used. / frases para comprobar cuándo usarlo y cuándo no.
 
+## Help improve it / Ayuda a mejorarlo
+
+DumbBot is built to be improved. Beginners: tell us where it confused you. Experienced users: see [CONTRIBUTING.md](CONTRIBUTING.md) for the ideas that would help most. Open an issue with the **Feedback** template.
+DumbBot está hecho para mejorarse. Principiantes: cuéntanos dónde te confundió. Con experiencia: mira [CONTRIBUTING.md](CONTRIBUTING.md). Abre un issue con la plantilla **Feedback**.
+
 ## Responsible use / Uso responsable
 
 Use it on your own PC and accounts. You are responsible for following the terms of each site you automate. Do not use it to bypass CAPTCHAs, send spam, create fake accounts or cheat.
