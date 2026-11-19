@@ -5,6 +5,8 @@
 
 > Windows only for now. / Solo Windows por ahora.
 
+![DumbBot demo: Notepad, click on File, Escape, paste, delete](assets/demo.gif)
+
 ## What it does / Qué hace
 
 - A toolkit to build your own slow-hands automations. / Una caja de herramientas para crear tus propias automatizaciones lentas.
