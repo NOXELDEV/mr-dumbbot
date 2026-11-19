@@ -26,21 +26,21 @@ hands.py windows                       list visible windows (title, process)
 hands.py active                        which window is in front
 hands.py shot [file.png]               screenshot (look at it to decide)
 hands.py focus "title part"            bring a window to the front
-hands.py click X Y --expect "title"    slow click, only if that window is in front
+hands.py click X Y --expect "title" --focus   slow click; --focus brings that window to the front first
 hands.py paste "text" --expect "title" paste through the clipboard
 hands.py key ctrl+l --expect "title"   press keys
 hands.py save-dialog "C:/dir/file.mp3" wait for a Windows Save As window and save there
 hands.py wait-title "title part" 60    wait until a window appears
 ```
 
-Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. **`ok` only means the keys were sent, not that the app received them.** Always `shot` to confirm. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse.
+Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. **`ok` only means the keys were sent, not that the app received them.** Always `shot` to confirm. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse. **Add `--focus` to every action:** your own app often takes the foreground between two calls, so a separate `focus` call gets undone. With `--focus` the window is brought to the front and checked in the same command; the check is never skipped.
 
 ## The loop
 
 0. **Check dependencies.** If any command answers `missing package`, ask the user, then run `pip install pyautogui pyperclip` (free, from PyPI).
 1. **Ask the user how to work** before starting: *watch mode* (mouse moves in real time; they must not touch it) or *quiet mode* (no mouse: shortcuts, clipboard or an API instead, so they can keep working). If it can be done without the mouse, offer that.
 2. `shot` and look. Decide the single next step a person would take.
-3. `focus` the right window, act with `--expect "<its title>"`.
+3. Act with `--expect "<its title>" --focus`.
 4. `shot` again. Confirm it worked.
 5. Repeat. Then tell the user where the result is.
 
@@ -51,6 +51,7 @@ Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. **
 - **Slow means cheap.** Never press Generate or Download twice "just in case". First check if the result already exists. Say what a step could cost, if you know.
 - **No loops.** After 2 failures on the same step, stop and tell the user what you see and what you tried.
 - **Copy and paste for text.** Use `paste`, not key-by-key typing.
+- **Don't destroy what you didn't create.** Apps like Notepad reopen the user's previous document. Check the window title and contents before select-all/delete, and never save over a file unless asked.
 - If something behaves oddly, say so and ask.
 
 ## Safety (enforced by the code)

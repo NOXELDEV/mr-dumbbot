@@ -6,7 +6,8 @@ The brain is the AI agent that calls this file. These are only the hands.
   python hands.py active                        show the focused window
   python hands.py shot [file.png]               screenshot
   python hands.py focus "title part"            bring a window to the front
-  python hands.py click X Y --expect "title"    slow click, only if that window is in front
+  python hands.py click X Y --expect "title" [--focus]  slow click, only if that window is in front
+                                                (--focus brings it to the front first, same command)
   python hands.py paste "text" --expect "title" paste text (clipboard), only if guard passes
   python hands.py key ctrl+l --expect "title"   press keys, only if guard passes
   python hands.py save-dialog "C:\\path\\file"  wait for a Save As window, save there
@@ -103,8 +104,12 @@ def budget():
     f.write_text(json.dumps(d))
 
 
-def guard(expect):
-    """Refuse to act unless the focused window is the expected one."""
+def guard(expect, refocus=False):
+    """Refuse to act unless the focused window is the expected one.
+    With refocus, first bring the expected window to the front (the agent's own app often takes
+    the foreground between calls), then check again. The check itself is never skipped."""
+    if refocus and expect:
+        focus(expect)
     _, t, p = active()
     if p in NEVER_TYPE_IN:
         raise SystemExit(say(ok=False, error=f"blocked process {p}"))
@@ -175,9 +180,9 @@ def main():
     sub.add_parser("active")
     s = sub.add_parser("shot"); s.add_argument("file", nargs="?")
     s = sub.add_parser("focus"); s.add_argument("title")
-    s = sub.add_parser("click"); s.add_argument("x", type=int); s.add_argument("y", type=int); s.add_argument("--expect"); s.add_argument("--double", action="store_true")
-    s = sub.add_parser("paste"); s.add_argument("text"); s.add_argument("--expect")
-    s = sub.add_parser("key"); s.add_argument("keys"); s.add_argument("--expect")
+    s = sub.add_parser("click"); s.add_argument("x", type=int); s.add_argument("y", type=int); s.add_argument("--expect"); s.add_argument("--focus", action="store_true"); s.add_argument("--double", action="store_true")
+    s = sub.add_parser("paste"); s.add_argument("text"); s.add_argument("--expect"); s.add_argument("--focus", action="store_true")
+    s = sub.add_parser("key"); s.add_argument("keys"); s.add_argument("--expect"); s.add_argument("--focus", action="store_true")
     s = sub.add_parser("save-dialog"); s.add_argument("path"); s.add_argument("--wait", type=int, default=120)
     s = sub.add_parser("wait-title"); s.add_argument("title"); s.add_argument("sec", nargs="?", type=int, default=60)
     a = ap.parse_args()
@@ -192,12 +197,12 @@ def main():
     elif a.cmd == "focus":
         say(ok=focus(a.title), front=active()[1])
     elif a.cmd == "click":
-        guard(a.expect); slow_move(a.x, a.y); pause(0.2, 0.5)
+        guard(a.expect, a.focus); slow_move(a.x, a.y); pause(0.2, 0.5)
         (pyautogui.doubleClick if a.double else pyautogui.click)(); say(ok=True)
     elif a.cmd == "paste":
-        guard(a.expect); paste(a.text); say(ok=True)
+        guard(a.expect, a.focus); paste(a.text); say(ok=True)
     elif a.cmd == "key":
-        guard(a.expect); pyautogui.hotkey(*a.keys.split("+")); say(ok=True)
+        guard(a.expect, a.focus); pyautogui.hotkey(*a.keys.split("+")); say(ok=True)
     elif a.cmd == "save-dialog":
         t0 = time.time()
         while time.time() - t0 < a.wait:
