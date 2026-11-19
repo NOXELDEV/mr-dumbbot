@@ -22,7 +22,13 @@ from ctypes import wintypes
 from datetime import date
 from pathlib import Path
 
-import pyautogui
+try:
+    import pyautogui
+    import pyperclip  # noqa: F401
+except ImportError as e:
+    print(json.dumps({"ok": False, "error": f"missing package: {e.name}",
+                      "fix": "ask the user, then run: pip install pyautogui pyperclip"}))
+    raise SystemExit(2)
 
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
@@ -117,13 +123,28 @@ def slow_move(x, y):
     pyautogui.moveTo(x, y, duration=random.uniform(0.6, 1.2), tween=pyautogui.easeInOutQuad)
 
 
+def bring_front(h):
+    """Foreground a window without tapping Alt (an Alt tap puts apps like Notepad in menu mode)."""
+    cur = user32.GetForegroundWindow()
+    me = kernel32.GetCurrentThreadId()
+    fg = user32.GetWindowThreadProcessId(cur, None)
+    attached = bool(fg and fg != me and user32.AttachThreadInput(me, fg, True))
+    try:
+        user32.ShowWindow(h, 9)
+        user32.BringWindowToTop(h)
+        user32.SetForegroundWindow(h)
+        if user32.GetForegroundWindow() != h:
+            user32.SwitchToThisWindow(h, True)  # fallback, no Alt tap
+    finally:
+        if attached:
+            user32.AttachThreadInput(me, fg, False)
+
+
 def focus(part, tries=3):
     for _ in range(tries):
         for h, t, p in visible_windows():
             if part.lower() in t.lower() and p not in NEVER_TYPE_IN:
-                user32.ShowWindow(h, 9)
-                pyautogui.press("alt")  # lets SetForegroundWindow succeed
-                user32.SetForegroundWindow(h)
+                bring_front(h)
                 pause(0.4, 0.8)
                 if part.lower() in active()[1].lower():
                     return True

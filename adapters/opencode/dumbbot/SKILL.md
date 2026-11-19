@@ -32,10 +32,11 @@ hands.py save-dialog "C:/dir/file.mp3" wait for a Windows Save As window and sav
 hands.py wait-title "title part" 60    wait until a window appears
 ```
 
-Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse.
+Each prints one JSON line: `{"ok": true}` or `{"ok": false, "error": "..."}`. **`ok` only means the keys were sent, not that the app received them.** Always `shot` to confirm. `--expect` is mandatory for click, paste and key: if another window is in front, the hands refuse.
 
 ## The loop
 
+0. **Check dependencies.** If any command answers `missing package`, ask the user, then run `pip install pyautogui pyperclip` (free, from PyPI).
 1. **Ask the user how to work** before starting: *watch mode* (mouse moves in real time; they must not touch it) or *quiet mode* (no mouse: shortcuts, clipboard or an API instead, so they can keep working). If it can be done without the mouse, offer that.
 2. `shot` and look. Decide the single next step a person would take.
 3. `focus` the right window, act with `--expect "<its title>"`.
